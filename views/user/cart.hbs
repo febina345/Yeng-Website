@@ -1,0 +1,108 @@
+<section>
+    <div class="container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Item</th>
+                    <th scope="col">Title</th>
+                    <th scope="col">Quantity</th>
+                    <th scope="col">Remove</th> <!-- Added a "Remove" column for actions -->
+                </tr>
+            </thead>
+            <tbody>
+                {{#each products}}
+                <tr>
+     
+                    <!-- Item: Product Image -->
+                    <td><img style="width:70px; height:70px" src="/product-images/{{this.product._id}}.jpg" alt="Product Image"></td>
+                    
+                    <!-- Title: Product Name -->
+                    <td>{{this.product.Name}}</td> <!-- Ensure this field matches the property in your product data -->
+                    <td>Rs.{{this.product.Price}}</td>
+                
+                    <!-- Quantity: Hardcoded to 1 for now, can be dynamic later -->
+                  <td>
+  <button class="cart-item-count mr-3" onclick="changeQuantity('{{this._id}}', '{{this.product._id}}', '{{../user._id}}', -1)">-</button>
+  <span id="{{this.product._id}}" class="badge badge-success">{{this.quantity}}</span>
+  <button class="cart-item-count ml-3" onclick="changeQuantity('{{this._id}}', '{{this.product._id}}', '{{../user._id}}', 1)">+</button>
+</td>
+
+                    <!-- Remove: Action to remove product from cart -->
+                    <td>
+  <button class="btn btn-danger" onclick="removeFromCart('{{this._id}}')">Remove</button>
+</td>
+                </tr>
+                {{/each}}
+
+            </tbody>
+        </table>
+        <hr>
+        <div class="float-right pr-5">
+        <h3 class="float-left mr-5 ">Total:  Rs.<span id="total">{{totalValue}}</span> </h3><br>
+        <a href="/place-order" class="btn btn-success mt-3" style="width:100%;"><b>Place Order</b></a>
+        </div>
+    </div> 
+</section>
+
+<script>
+   function changeQuantity(cartId, proId, userId, count) {
+  let quantity = parseInt(document.getElementById(proId).innerHTML);
+  count = parseInt(count);
+  console.log('UserId:', userId); // Log userId to ensure it's correct
+
+  if (!userId) {
+    console.error('User ID is missing');
+    return;
+  }
+
+  $.ajax({
+    url: '/change-product-quantity',
+    data: {
+      user: userId,
+      cart: cartId,
+      product: proId,
+      count: count,
+      quantity: quantity
+    },
+    method: 'post',
+    success: (response) => {
+      if (response.removeProduct) {
+        alert("Product Removed From Cart");
+        location.reload();
+      } else {
+        console.log(response);
+        document.getElementById(proId).innerHTML = quantity + count;
+        document.getElementById('total').innerHTML = response.total;
+      }
+    },
+    error: (err) => {
+      console.error('Error:', err);
+    }
+  });
+}
+
+</script>
+
+<script>
+function removeFromCart(cartId) {
+  $.ajax({
+    url: '/remove-from-cart/' + cartId,
+    method: 'post',
+    success: (response) => {
+      if (response.status) {
+        alert("Product removed from cart");
+        // Remove the row from the table for immediate feedback
+        $(`#cart-item-${cartId}`).remove(); 
+        // Optionally, reload the page if necessary
+        // location.reload();
+      } else {
+        alert("Failed to remove product");
+      }
+    },
+    error: (err) => {
+      console.error('Error removing product:', err);
+      alert("An error occurred while removing the product");
+    }
+  });
+}
+</script>

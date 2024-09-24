@@ -1,0 +1,78 @@
+<section>
+    <div class="container mt-5">
+<div class="row">
+    {{#each products}}
+
+    <div class="col-md-3 p-3">
+        <div class="card" style="width:15rem; height:24rem">
+            <img class="card-img-top" 
+            src="/product-images/{{this.product._id}}.jpg"
+            alt="card image cap"
+            style="height: 12rem;">
+            <div class="card-body">
+                <h5 class="card-title">{{this.product.Name}}</h5>
+                <p class="card-text">Rs.{{this.product.Price}}</p>
+                <p class="card-text">Quantity: {{this.quantity}}</p>
+                <p class="card-text">{{this.description}}</p>
+
+            </div>
+
+        </div>
+
+    </div>
+    {{/each}}
+</div>
+    </div>
+</section>
+
+<script>
+  
+  // Function to fetch orders dynamically
+  function fetchOrders() {
+    fetch('/api/get-orders')  // Replace with your correct API endpoint
+      .then(response => response.json())
+      .then(data => {
+        // Log the fetched order data
+        console.log(data);
+        // Call the function to render the orders dynamically
+        renderOrders(data);
+      })
+      .catch(error => {
+        console.error('Error fetching orders:', error);
+      });
+  }
+
+  // Function to render orders dynamically in the DOM
+  function renderOrders(orders) {
+    // Get the container where the products will be rendered
+    const container = document.querySelector('.row');
+    container.innerHTML = '';  // Clear existing products
+
+    // Loop through each order and create HTML for it
+    orders.forEach(order => {
+      const productCard = `
+        <div class="col-md-3 p-3">
+          <div class="card" style="width:15rem; height:24rem">
+            <img class="card-img-top" 
+                 src="/product-images/${order.product._id}.jpg" 
+                 alt="Card image cap" 
+                 style="height: 12rem;">
+            <div class="card-body">
+              <h5 class="card-title">${order.product.Name}</h5>
+              <p class="card-text">Rs.${order.product.Price}</p>
+              <p class="card-text">Quantity: ${order.quantity}</p>
+              <p class="card-text">${order.product.Description}</p>
+            </div>
+          </div>
+        </div>
+      `;
+      // Append the product card to the container
+      container.innerHTML += productCard;
+    });
+  }
+
+  // Fetch the orders on page load
+  window.onload = fetchOrders;
+
+  
+</script>
